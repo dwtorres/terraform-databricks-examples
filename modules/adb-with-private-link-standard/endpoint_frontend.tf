@@ -13,6 +13,6 @@ resource "azurerm_private_endpoint" "front_pe" {
 
   private_dns_zone_group {
     name                 = "private-dns-zone-uiapi"
-    private_dns_zone_ids = [azurerm_private_dns_zone.dns_auth_front.id]
+    private_dns_zone_ids = [azurerm_private_dns_zone.dnsdpcp.id]
   }
 }
