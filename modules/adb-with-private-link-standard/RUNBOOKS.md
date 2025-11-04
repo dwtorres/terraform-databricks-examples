@@ -104,7 +104,63 @@ watch -n 30 'az databricks workspace show \
   --query "provisioningState"'
 ```
 
-### 1.3 Post-Deployment Validation
+### 1.3 Value Substitution Quick Reference
+
+**Purpose:** Extract deployment-specific values to replace placeholders in validation and troubleshooting commands.
+
+**Quick Value Extraction:**
+
+```bash
+# Navigate to deployment directory
+cd terraform-databricks-examples/examples/adb-with-private-link-standard
+
+# Extract all key values from Terraform outputs
+export PREFIX=$(terraform output -raw prefix 2>/dev/null || echo "tfdemo")
+export WORKSPACE_ID=$(terraform output -raw workspace_id)
+export WORKSPACE_NAME=$(terraform output -raw workspace_name 2>/dev/null || terraform output -raw dp_workspace_name)
+export WORKSPACE_URL=$(terraform output -raw workspace_url)
+export DP_RG_NAME=$(terraform output -raw dp_rg_name)
+export TRANSIT_RG_NAME=$(terraform output -raw transit_rg_name)
+export DP_VNET_NAME=$(terraform output -raw dp_vnet_name)
+export TRANSIT_VNET_NAME=$(terraform output -raw transit_vnet_name)
+export DBFS_NAME=$(terraform output -raw dbfs_storage_name)
+export TEST_VM_IP=$(terraform output -raw test_vm_public_ip)
+export TEST_VM_PASSWORD=$(terraform output -json test_vm_password | jq -r '.value')
+
+# Display all values for reference
+echo "=== Deployment Values ==="
+echo "PREFIX: ${PREFIX}"
+echo "WORKSPACE_ID: ${WORKSPACE_ID}"
+echo "WORKSPACE_NAME: ${WORKSPACE_NAME}"
+echo "WORKSPACE_URL: ${WORKSPACE_URL}"
+echo "DP_RG_NAME: ${DP_RG_NAME}"
+echo "TRANSIT_RG_NAME: ${TRANSIT_RG_NAME}"
+echo "DP_VNET_NAME: ${DP_VNET_NAME}"
+echo "TRANSIT_VNET_NAME: ${TRANSIT_VNET_NAME}"
+echo "DBFS_NAME: ${DBFS_NAME}"
+echo "TEST_VM_IP: ${TEST_VM_IP}"
+echo "========================="
+```
+
+**Usage Pattern:**
+
+After setting these variables, you can use them throughout this runbook by replacing placeholders:
+- `<workspace-id>` → `${WORKSPACE_ID}`
+- `<dbfs-name>` → `${DBFS_NAME}`
+- `<dp-rg-name>` → `${DP_RG_NAME}`
+- And so on...
+
+**Example Command Transformation:**
+
+```bash
+# Before (with placeholders):
+nslookup <workspace-id>.azuredatabricks.net
+
+# After (with variables):
+nslookup ${WORKSPACE_ID}.azuredatabricks.net
+```
+
+### 1.4 Post-Deployment Validation
 
 **Immediate Validation Steps:**
 
