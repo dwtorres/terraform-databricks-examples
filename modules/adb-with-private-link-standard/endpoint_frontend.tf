@@ -15,4 +15,11 @@ resource "azurerm_private_endpoint" "front_pe" {
     name                 = "private-dns-zone-uiapi"
     private_dns_zone_ids = [azurerm_private_dns_zone.dnsdpcp.id]
   }
+
+  # Fix for Issue #9: Race condition prevention
+  # Ensure workspace is fully provisioned before creating frontend endpoint
+  # Without this, endpoint creation can fail with "resource not ready" (44/45 deployment)
+  depends_on = [
+    azurerm_databricks_workspace.dp_workspace
+  ]
 }
