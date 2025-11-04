@@ -198,8 +198,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_dp_databricks_azure_workspace_resource_id"></a> [dp\_databricks\_azure\_workspace\_resource\_id](#output\_dp\_databricks\_azure\_workspace\_resource\_id) | **Depricated** The ID of the Databricks Workspace in the Azure management plane. |
-| <a name="output_dp_workspace_url"></a> [dp\_workspace\_url](#output\_dp\_workspace\_url) | **Depricated** Renamed to `workspace_url` to align with naming used in other modules |
+| <a name="output_dp_databricks_azure_workspace_resource_id"></a> [dp\_databricks\_azure\_workspace\_resource\_id](#output\_dp\_databricks\_azure\_workspace\_resource\_id) | **Deprecated** The ID of the Databricks Workspace in the Azure management plane. |
+| <a name="output_dp_workspace_url"></a> [dp\_workspace\_url](#output\_dp\_workspace\_url) | **Deprecated** Renamed to `workspace_url` to align with naming used in other modules |
 | <a name="output_my_ip_addr"></a> [my\_ip\_addr](#output\_my\_ip\_addr) | n/a |
 | <a name="output_test_vm_password"></a> [test\_vm\_password](#output\_test\_vm\_password) | Password to access the Test VM, use `terraform output -json test_vm_password` to get the password value |
 | <a name="output_test_vm_public_ip"></a> [test\_vm\_public\_ip](#output\_test\_vm\_public\_ip) | Public IP of the created virtual machine |
