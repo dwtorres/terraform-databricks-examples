@@ -30,3 +30,5 @@
 .vscode/
 
 .idea/
+# Serena MCP server data
+.serena/
