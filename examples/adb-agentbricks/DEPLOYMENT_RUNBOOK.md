@@ -40,6 +40,73 @@
 
 ---
 
+## 🔑 IMPORTANT: Customer-Managed Keys Status
+
+**Current Status:** Customer-Managed Keys (CMK) are **TEMPORARILY DISABLED** due to Key Vault permission requirements.
+
+### What's Currently Disabled
+- ❌ Azure Key Vault resource creation
+- ❌ 3 customer-managed keys (managed services, managed disk, root DBFS)
+- ❌ Key Vault private endpoint
+- ❌ `customer_managed_key_enabled` workspace parameter
+
+### What Still Works
+- ✅ Databricks workspace deployment
+- ✅ **Platform-managed encryption** (Microsoft manages keys automatically)
+- ✅ Infrastructure encryption enabled
+- ✅ DBFS firewall enabled
+- ✅ Private endpoints for workspace, auth, blob, DFS
+- ✅ No public IP for clusters
+- ✅ All other security features
+
+### Security Impact
+**Encryption Status:**
+- **Data at rest:** Encrypted with Microsoft platform-managed keys
+- **Data in transit:** TLS encryption (unchanged)
+- **Control:** Microsoft manages encryption keys instead of you
+- **Compliance:** May not meet requirements if customer-managed keys are mandatory
+
+### How to Re-Enable Customer-Managed Keys
+
+**When you obtain Key Vault creation permissions:**
+
+1. **Rename keys configuration back:**
+   ```bash
+   cd /Users/dwtorres/src/work/terraform-databricks-examples/examples/adb-agentbricks
+   mv keys.tf.disabled keys.tf
+   ```
+
+2. **Uncomment workspace.tf CMK settings:**
+   - Line 23-24: Uncomment `customer_managed_key_enabled = true`
+   - Line 32-34: Uncomment `managed_services_cmk_key_vault_key_id` and `managed_disk_cmk_key_vault_key_id`
+   - Line 50: Uncomment `azurerm_key_vault_access_policy.current_user` in depends_on
+   - Lines 54-62: Uncomment entire `azurerm_databricks_workspace_root_dbfs_customer_managed_key` resource
+
+3. **Uncomment outputs.tf Key Vault outputs:**
+   - Lines 46-55: Uncomment `key_vault_id` and `key_vault_uri` outputs
+
+4. **Uncomment privateendpoint.tf Key Vault endpoint (optional):**
+   - Lines 141-180: Uncomment Key Vault private endpoint and DNS zone resources
+   - Only if you want Key Vault accessible via private endpoint
+
+5. **Update terraform.tfvars (optional):**
+   ```hcl
+   create_keyvault_endpoint = true  # If you want Key Vault private endpoint
+   ```
+
+6. **Re-deploy with CMK:**
+   ```bash
+   terraform init
+   terraform plan -out=tfplan
+   terraform apply tfplan
+   ```
+
+**Expected Additional Resources:** +8-10 resources (Key Vault, 3 keys, 2 access policies, optional private endpoint + DNS)
+
+**Note:** Enabling CMK after initial deployment will require workspace update. Test in non-production first.
+
+---
+
 ## 📋 Environment Variables
 
 Define these at the start:
@@ -385,23 +452,23 @@ terraform init
 terraform plan -out=tfplan
 ```
 
-**Expected Resources:** ~35-40 resources to create
+**Expected Resources:** ~30-35 resources to create
 - 1 Databricks workspace
 - 1 VNet + 3 subnets
 - 1 Access connector (Unity Catalog)
-- 1 Key Vault + 3 customer-managed keys
-- 4-5 Private endpoints (UI/API, Auth, DBFS Blob, Storage DFS, optional Key Vault)
-- 3-4 Private DNS zones + VNet links
+- ~~1 Key Vault + 3 customer-managed keys~~ (TEMPORARILY DISABLED)
+- 4 Private endpoints (UI/API, Auth, DBFS Blob, Storage DFS)
+- 3 Private DNS zones + VNet links
 - 2 NSGs + security rules
 - 1 Random string (naming)
 
 **Key Security Features:**
 - ✅ Public network access disabled
-- ✅ Infrastructure encryption enabled
+- ✅ Infrastructure encryption enabled (platform-managed keys)
 - ✅ DBFS firewall enabled
 - ✅ No public IP for clusters
-- ✅ 3 customer-managed keys (managed services, managed disk, root DBFS)
-- ✅ Private endpoints for all services
+- ⚠️ ~~3 customer-managed keys~~ (TEMPORARILY DISABLED - using platform-managed keys)
+- ✅ Private endpoints for workspace and storage
 
 **Resource Group Summary:**
 - **User RGs:** 0 new (uses existing rg-eastus2-edp-poc)
@@ -483,9 +550,9 @@ az resource list \
 - Virtual network (agentbricks-xxxxx-vnet)
 - Databricks workspace (agentbricks-xxxxx-workspace)
 - Access connector (agentbricks-xxxxx-access-connector)
-- Key Vault (agentbricks-xxxxx-kv)
-- Private endpoints (4-5 endpoints)
-- Private DNS zones (3-4 zones)
+- ~~Key Vault (agentbricks-xxxxx-kv)~~ (TEMPORARILY DISABLED)
+- Private endpoints (4 endpoints: UI/API, Auth, Blob, DFS)
+- Private DNS zones (3 zones: azuredatabricks, blob, dfs)
 
 ---
 
@@ -519,21 +586,16 @@ az network private-endpoint list \
 
 ---
 
-### 4. Verify Key Vault and Customer-Managed Keys
+### 4. ~~Verify Key Vault and Customer-Managed Keys~~ (SKIPPED - CMK Disabled)
 
-```bash
-# Get Key Vault name
-export KV_NAME=$(az keyvault list --resource-group $RESOURCE_GROUP --query "[?contains(name, 'agentbricks')].name" -o tsv)
+**⚠️ This validation step is skipped because Customer-Managed Keys are temporarily disabled.**
 
-# List keys in Key Vault
-az keyvault key list --vault-name $KV_NAME \
-  --query "[].{Name:name, Enabled:attributes.enabled}" -o table
-```
+**Current Encryption Status:**
+- Data at rest: Encrypted with **platform-managed keys** (Microsoft-managed)
+- CMK (customer-managed keys): Temporarily disabled
+- Key Vault: Not deployed
 
-**Expected Output:** 3 keys:
-- dbx-managed-services-key (enabled)
-- dbx-managed-disk-key (enabled)
-- dbx-root-dbfs-key (enabled)
+**To re-enable:** See "How to Re-Enable Customer-Managed Keys" section at the top of this runbook.
 
 ---
 
@@ -563,8 +625,8 @@ az databricks workspace show \
 
 **Expected Output:**
 - PublicNetworkAccess: False
-- CustomerManagedKey: True
-- InfrastructureEncryption: True
+- CustomerManagedKey: ~~True~~ **False** (CMK temporarily disabled)
+- InfrastructureEncryption: True (platform-managed keys)
 
 ---
 
