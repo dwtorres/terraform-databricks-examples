@@ -67,7 +67,7 @@ resource "azurerm_private_endpoint" "dbfs_blob" {
   private_service_connection {
     name                           = "psc-${local.prefix}-dbfs-blob"
     private_connection_resource_id = join("", [azurerm_databricks_workspace.this.managed_resource_group_id, "/providers/Microsoft.Storage/storageAccounts/${local.dbfsname}"])
-    is_manual_connection           = false
+    is_manual_connection           = true  # Changed to manual approval - requires post-deployment approval in Azure Portal
     subresource_names              = ["blob"]
   }
 
@@ -107,7 +107,7 @@ resource "azurerm_private_endpoint" "storage_dfs" {
   private_service_connection {
     name                           = "psc-${local.prefix}-storage-dfs"
     private_connection_resource_id = join("", [azurerm_databricks_workspace.this.managed_resource_group_id, "/providers/Microsoft.Storage/storageAccounts/${local.dbfsname}"])
-    is_manual_connection           = false
+    is_manual_connection           = true  # Changed to manual approval - requires post-deployment approval in Azure Portal
     subresource_names              = ["dfs"]
   }
 
